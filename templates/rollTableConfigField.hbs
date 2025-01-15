@@ -1,0 +1,23 @@
+ <div class="form-group">
+    <label>Is a slot machine?</label>
+    <div class="form-fields">
+        <input
+            type="checkbox"
+            {{checked isSlot}} />
+    </div>
+    <p class="hint">
+        checkbox it so that the machine allows it to be rolled as a slot machine
+    </p>
+</div>
+{{#if isSlot}}
+<div class="form-group">
+    <label>Slot machine spin cost</label>
+    <div class="form-fields">
+        <input
+            type="number"
+            value="{{slotCost}}"
+            step="1" />
+    </div>
+    <p class="hint">how much does it cost to roll the slot machine</p>
+</div>
+{{/if}}

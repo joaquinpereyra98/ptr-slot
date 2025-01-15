@@ -1,0 +1,15 @@
+{
+  "name": "ptr-slot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "author": "JoaquinP",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "rollup": "^4.24.3"
+  }
+}
