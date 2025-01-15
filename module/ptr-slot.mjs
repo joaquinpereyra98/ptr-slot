@@ -1,3 +1,19 @@
-import rollTableConfigHook from "./hooks/rollTableConfigHook.mjs";
+import CONST from "./constant.mjs";
 
-Hooks.on("renderRollTableConfig", rollTableConfigHook);
+import * as classes from "./classes/_module.mjs";
+import * as apps from "./applications/_module.mjs";
+import * as hooks from "./hooks/_module.mjs";
+
+Hooks.on("renderRollTableConfig", hooks.onRenderRollTable);
+
+Hooks.on("init", () => {
+  const module = game.modules.get(CONST.moduleId);
+
+  Object.assign(module, {
+    classes,
+    apps,
+    hooks,
+  });
+
+  CONFIG.RollTable.documentClass = classes.RollTable;
+});

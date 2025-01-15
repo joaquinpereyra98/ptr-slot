@@ -5,7 +5,7 @@
  * @param {JQuery} param1 - A jQuery-wrapped HTML element.
  * @param {Object} data - Data context for the application.
  */
-export default function rollTableConfigHook(application, [html], data) {
+export default function onRenderRollTable(application, [html], data) {
     const lastFormGroup = html.querySelector(".form-group:last-of-type");
     if (!lastFormGroup) return;
   
