@@ -1,0 +1,21 @@
+<div class="flexrow">
+    <div class="stage">
+        <div class="row console">
+            <div class="console-outer">
+                <div id="col1" class="wheel"><div class="container">
+                        <ul class="ring">
+                            {{#each results as |item|}}
+                            <li data-content="apple" class="item">
+                                <img src="{{item.icon}}" alt>
+                            </li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="">
+        <button data-action="rollSingle">Roll!</button>
+    </div>
+</div>

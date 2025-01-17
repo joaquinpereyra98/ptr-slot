@@ -26,7 +26,8 @@
     "conflicts": []
   },
   "esmodules": [
-    "module/ptr-slot.mjs"
+    "module/ptr-slot.mjs",
+    "greensock/esm/all.js"
   ],
   "styles": [
     "styles/ptr-slot.css"
