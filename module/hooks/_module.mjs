@@ -1,1 +1,1 @@
-export {default as onRenderRollTable} from './onRenderRollTable.mjs';
+export { default as onRenderRollTable } from "./onRenderRollTable.mjs";

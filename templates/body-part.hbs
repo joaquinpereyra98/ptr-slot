@@ -2,20 +2,25 @@
     <div class="stage">
         <div class="row console">
             <div class="console-outer">
+                <i class="row-icon fa-solid fa-caret-right"></i>
                 <div id="col1" class="wheel"><div class="container">
                         <ul class="ring">
                             {{#each results as |item|}}
-                            <li data-content="apple" class="item">
+                            <li data-document-id="{{data}}" class="item">
                                 <img src="{{item.icon}}" alt>
                             </li>
                             {{/each}}
                         </ul>
                     </div>
                 </div>
+                <i class="row-icon fa-solid fa-caret-left"></i>
             </div>
         </div>
     </div>
-    <div class="">
-        <button data-action="rollSingle">Roll!</button>
+    <div class="slot-container">
+        <div class="img-portrait">
+            <img class="reward-item item-img" src="" alt="">
+        </div>
+        <button class="slot-btn" data-action="rollSingle">Roll!</button>
     </div>
 </div>

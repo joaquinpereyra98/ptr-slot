@@ -1,10 +1,10 @@
-import SlotMachineDrawApp from '../applications/slot-machine-draw.mjs';
-
+import MODULE_CONST from "module/constant.mjs";
 const cls = CONFIG.RollTable.documentClass;
 
 export default class RollTable extends cls {
-  drawSlotMachine(options) {
-    const app = new SlotMachineDrawApp({document: this});
-    app.render({force: true});
+  drawSlotMachine() {
+    const { SlotMachineApp } = game.modules.get(MODULE_CONST.moduleId).apps;
+    const app = new SlotMachineApp({ document: this });
+    app.render({ force: true });
   }
 }

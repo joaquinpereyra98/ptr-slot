@@ -5,7 +5,7 @@
     "baseUrl": ".",
     "paths": {
       "/scripts/greensock/esm/all.js": [
-        "foundry/resources/app/public/scripts/greensock/src/all.js"
+        "foundry/resources/app/public/scripts/greensock/src/gsap-core"
       ]
     },
   },
