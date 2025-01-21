@@ -6,6 +6,8 @@ import * as hooks from "./hooks/_module.mjs";
 
 Hooks.on("renderRollTableConfig", hooks.onRenderRollTable);
 
+Hooks.on("hotbarDrop", hooks.onHotbarDrop);
+
 Hooks.on("init", () => {
   const module = game.modules.get(MODULE_CONST.moduleId);
 

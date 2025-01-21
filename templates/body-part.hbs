@@ -16,11 +16,36 @@
                 <i class="row-icon fa-solid fa-caret-left"></i>
             </div>
         </div>
+        <button class="slot-btn" data-action="rollSingle" {{disabled (lt
+            actorMoney tableCost)}}>ROLL!</button>
     </div>
     <div class="slot-container">
-        <div class="img-portrait">
-            <img class="reward-item item-img" src="" alt="">
+        <div class="input-fields">
+            <div class="form-group">
+                <label for>Actor Money</label>
+                <input class="input-slotmachine actorMoney" type="number"
+                    disabled value="{{actorMoney}}">
+            </div>
+            <div class="form-group">
+                <label for>Cost Slot</label>
+                <input class="input-slotmachine" type="number" disabled
+                    value="{{tableCost}}">
+            </div>
+
         </div>
-        <button class="slot-btn" data-action="rollSingle">Roll!</button>
+        <div class="award-fields flexcol">
+            <div class="img-portrait">
+                <img class="reward-item item-img" src="{{awardItem.img}}" alt>
+            </div>
+            {{#if awardItem}}
+            <div class="anchor-item">
+                {{{actorAnchor}}}
+                <span>
+                    recieve:
+                </span>
+                {{{awardItem.anchor}}}
+            </div>
+            {{/if}}
+        </div>
     </div>
 </div>

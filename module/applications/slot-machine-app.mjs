@@ -8,7 +8,8 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
 ) {
   constructor(options = {}) {
     super(options);
-    this.#document = options.document;
+    this.#rollTable = options.rollTable;
+    this.#actor = options.actor;
   }
 
   /** @inheritDoc */
@@ -25,24 +26,36 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
     actions: {
       rollSingle: SlotMachineApp.rollSingle,
     },
-    document: null,
+    rollTable: null,
+    actor: null,
   };
 
   /**
-   * The Document instance associated with the application.
+   * The RollTable instance associated with the application.
    * @type {Document}
    */
-  get document() {
-    return this.#document;
+  get rollTable() {
+    return this.#rollTable;
   }
 
+  get actor() {
+    return this.#actor;
+  }
+
+  /** @type {Object} */
+  awardItem = null;
+
   /** @type {Document} */
-  #document;
+  #rollTable;
+
+  /** @type {Document} */
+  #actor;
 
   /** @type {TimelineLite} */
   #timeline;
 
-  #currentIndex;
+  /** @type {Number} */
+  #currentIndex = 0;
 
   /**
    * The ring element used for animation.
@@ -69,7 +82,7 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
 
   /** @inheritDoc */
   get title() {
-    return `Slot Machine: ${this.document.name}`;
+    return `Slot Machine: ${this.rollTable.name}`;
   }
 
   /* -------------------------------------------- */
@@ -82,6 +95,10 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
     return {
       ...baseContext,
       results: this._prepareResults(),
+      actorMoney: this.actor.system.money ?? 0,
+      tableCost: this.rollTable.getFlag("ptr-slot", "slotCost") ?? 0,
+      awardItem: this.awardItem,
+      actorAnchor: this.actor.toAnchor().outerHTML,
     };
   }
 
@@ -90,29 +107,17 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
    * @returns {Array<Object>} An array of result objects with icon and label.
    */
   _prepareResults() {
-    const { DOCUMENT, COMPENDIUM, TEXT } = CONST.TABLE_RESULT_TYPES;
+    const { TEXT } = CONST.TABLE_RESULT_TYPES;
 
-    const results = Array.from(this.document.results)
+    const results = Array.from(this.rollTable.results)
       .filter((r) => r.type !== TEXT)
-      .map((r) => {
-        let label;
+      .map((r) => ({
+        icon: r.icon,
+        label: r.text,
+        data: r.documentId,
+      }));
 
-        if (r.type === DOCUMENT) {
-          label =
-            game.collections.get(r.documentCollection)?.get(r.documentId)
-              ?.name ?? null;
-        } else if (r.type === COMPENDIUM) {
-          label =
-            game.packs.get(r.documentCollection)?.index.get(r.documentId)
-              ?.name ?? null;
-        }
-
-        return {
-          icon: r.icon,
-          label,
-          data: r.documentId,
-        };
-      });
+    while (results.length < 10) results.push(...results);
 
     return results;
   }
@@ -120,14 +125,6 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
   /* -------------------------------------------- */
   /*  Render Methods                              */
   /* -------------------------------------------- */
-
-  /** @inheritDoc */
-  _onFirstRender(context, options) {
-    super._onFirstRender(context, options);
-
-    // Set up the ring animation timeline
-    this.#timeline = this.#setupRing(this.itemsElements, this.ringElement);
-  }
 
   /**
    * Sets up the ring and items with their initial 3D positions.
@@ -144,11 +141,13 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
     // Calculate the angle increment between items
     const angleIncrement = 360 / itemCount;
 
-    this._changeCurrentIndex(0);
+    const currentIndex = this.#currentIndex ?? 0;
+
+    this._changeCurrentIndex(currentIndex);
 
     return gsap
       .timeline()
-      .set(ring, { rotationX: 0 })
+      .set(ring, { rotationX: currentIndex * angleIncrement })
       .set(items, {
         rotateX: (i) => i * -angleIncrement, // Position items in a circle
         transformOrigin: `50% 50% -${radius}px`, // Set circle depth
@@ -159,14 +158,7 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
   /** @inheritDoc */
   _onRender(context, options) {
     super._onRender(context, options);
-
-    this._performRingRoll({
-      clearTimeline: false,
-      rotationX: "-=360",
-      duration: 3,
-      ease: "power4.inOut",
-      delay: 1,
-    });
+    this.#timeline = this.#setupRing(this.itemsElements, this.ringElement);
   }
 
   /* -------------------------------------------- */
@@ -232,10 +224,11 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
 
     const totalRotation = rolls * 360 - targetRotation;
 
-    await this._performRingRoll({
+    await this._performRingRoll({ 
       rotationX: `-=${totalRotation}`,
       duration,
       ease: "elastic.out",
+      delay: 0.5,
       onComplete: () => {
         this._changeCurrentIndex(targetIndex);
       },
@@ -268,28 +261,42 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
 
   /**
    *
-   * @param {string} itemImage
-   * @param {string} itemName
+   * @param {Item} item
    */
-  _setItemAward(itemImage, itemName) {
-    const img = this.element.querySelector(".reward-item.item-img");
-    img.src = itemImage;
+  async _setItemAward(item) {
+    const awardItem = {
+      img: item.img,
+      anchor: item.toAnchor().outerHTML,
+      uuid: item.uuid,
+    };
+    this.awardItem = awardItem;
+
+    this.render();
   }
 
-    /**
+  /**
    *
    * @param {number} newIndex
    */
-    _changeCurrentIndex(newIndex) {
-      if (!Number.isInteger(newIndex)) return;
-  
-      const oldItem = Array.from(this.itemsElements)[this.#currentIndex];
-      oldItem?.classList?.remove("active");
-      const currentItem = Array.from(this.itemsElements)[newIndex];
-      currentItem?.classList?.add("active");
-  
-      this.#currentIndex = newIndex;
-    }
+  _changeCurrentIndex(newIndex) {
+    if (!Number.isInteger(newIndex)) return;
+
+    const oldItem = Array.from(this.itemsElements)[this.#currentIndex];
+    oldItem?.classList?.remove("active");
+    const currentItem = Array.from(this.itemsElements)[newIndex];
+    currentItem?.classList?.add("active");
+
+    this.#currentIndex = newIndex;
+  }
+
+  async _updateActorMoney(newValue) {
+    const moneyInput = this.element.querySelector(
+      ".input-slotmachine.actorMoney"
+    );
+    moneyInput.value = newValue;
+
+    return await this.actor.update({ "system.money": newValue });
+  }
 
   /* -------------------------------------------- */
   /*  Event Listeners and Handlers                */
@@ -304,13 +311,52 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
   static async rollSingle(event, target) {
     event.preventDefault();
 
-    const { results } = await this.document.draw({
+    const actorMoney = this.actor.system.money ?? 0;
+    const tableCost = this.rollTable.getFlag("ptr-slot", "slotCost") ?? 0;
+
+    if (actorMoney < tableCost) {
+      return;
+    }
+
+    await this._updateActorMoney(actorMoney - tableCost);
+    ui.notifications.info(`${MODULE_CONST.moduleId} | The amount of money of actor, ${this.actor.name}, was reduced by ${tableCost}`)
+
+    const { results } = await this.rollTable.draw({
       displayChat: false,
     });
 
-    await this._rotateToItem(results[0].documentId, { rolls: 7, duration: 3 });
-    this._setItemAward(results[0].icon, results[0].name);
+    await this._rotateToItem(results[0].documentId, { rolls: 12, duration: 4 });
 
-    this.document.toMessage(results);
+    const item = await getDocFromResult(results[0]);
+
+    const actorItem = await this.#createItemOnActor(item);
+    
+    this._setItemAward(actorItem);
   }
+
+  async #createItemOnActor(item) {
+    const itemOnActor = this.actor.items.getName(item.name);
+    if (itemOnActor) {
+      ui.notifications.info(`${MODULE_CONST.moduleId} | The quantity of the item ${itemOnActor.name} was increased by one on actor ${this.actor.name}`);
+      return await itemOnActor.update({
+        "system.quantity": Number(itemOnActor.system?.quantity) + 1,
+      });
+    } else {
+      ui.notifications.info(`${MODULE_CONST.moduleId} | A new item ${item.name} was created on actor ${this.actor.name}`);
+      return await Item.implementation.create(item.toObject(), {
+        parent: this.actor,
+      });
+    }
+  }
+}
+
+async function getDocFromResult(result) {
+  const { DOCUMENT, COMPENDIUM } = CONST.TABLE_RESULT_TYPES;
+  return result.type === DOCUMENT
+    ? game.collections.get(result.documentCollection)?.get(result.documentId)
+    : result.type === COMPENDIUM
+    ? await game.packs
+        .get(result.documentCollection)
+        ?.getDocument(result.documentId)
+    : null;
 }

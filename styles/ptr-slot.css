@@ -13,6 +13,13 @@
         height: 50vh;
         position: relative;
         justify-content: center;
+        align-items: center;
+        
+        .slot-btn {
+            font-size: 2rem;
+            line-height: 40px;
+            margin: 0.5rem 0;
+        }
     }
 
     .ring,
@@ -34,6 +41,7 @@
         max-height: 520px;
         flex-direction: column;
         justify-content: center;
+        align-items: center;
         margin: 0;
         width: 100%;
     }
@@ -129,18 +137,48 @@
         flex-direction: column;
         align-items: center;
 
-        .img-portrait {
-            margin: 0.5rem 0.2rem;
+        .input-fields {
+            display: flex;
+            gap: 1rem;
 
-            .item-img {
-                width: 120px;
-                height: 120px;
-                padding: 0.2rem;
-                border: 0.3rem solid;
-                border-radius: 10px;
-                object-fit: contain;
+            .input-slotmachine {
+                font-size: 2rem;
+                text-align: center;
+                height: auto;
             }
         }
+
+        .award-fields {
+            align-items: center;
+            padding: 0 0.5rem;
+
+            .img-portrait {
+                margin: 0.5rem 0.2rem;
+
+                .item-img {
+                    width: 120px;
+                    height: 120px;
+                    padding: 0.2rem;
+                    border: 0.3rem solid;
+                    border-radius: 10px;
+                    object-fit: contain;
+                }
+            }
+
+            .anchor-item {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: 0.4rem;
+                font-size: 1.1rem;
+
+                span {
+                    padding: 0 0.3rem;
+                }
+            }
+        }
+
     }
 
 }
