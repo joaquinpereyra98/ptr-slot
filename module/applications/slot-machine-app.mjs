@@ -117,6 +117,8 @@ export default class SlotMachineApp extends HandlebarsApplicationMixin(
         data: r.documentId,
       }));
 
+    if(results.length === 0) return results;
+
     while (results.length < 10) results.push(...results);
 
     return results;

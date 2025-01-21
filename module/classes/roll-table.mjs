@@ -14,6 +14,11 @@ export default class RollTable extends cls {
   async drawSlotMachine(options = {}) {
     const { actorUuid } = options;
 
+    if (this.results.size === 0)
+      return ui.notifications.warn(
+        `${MODULE_CONST.moduleId} | Cannot draw to RollTable with 0 results`
+      );
+
     const SlotMachineApp = game.modules.get(MODULE_CONST.moduleId)?.apps
       ?.SlotMachineApp;
 
@@ -30,18 +35,18 @@ export default class RollTable extends cls {
       ? await fromUuid(actorUuid)
       : canvas?.tokens?.controlled[0]?.actor ?? game.user.character;
 
-    if (!actor) {
-      ui.notifications.warn(
+    if (!actor)
+      return ui.notifications.warn(
         `${MODULE_CONST.moduleId} | You must select a token before drawing the Slot Machine or provide an actorUuid in the arguments.`
       );
-      return;
-    }
 
     new SlotMachineApp({ rollTable: this, actor }).render({ force: true });
   }
 
   toDragData() {
-    return { ...super.toDragData(), isSlotMachine: this.getFlag("ptr-slot", "isSlot") || false };
+    return {
+      ...super.toDragData(),
+      isSlotMachine: this.getFlag("ptr-slot", "isSlot") || false,
+    };
   }
-  
 }
