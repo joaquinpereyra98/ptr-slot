@@ -33,7 +33,7 @@ export default class RollTable extends cls {
 
     const actor = id
       ? await fromUuid(actorUuid)
-      : canvas?.tokens?.controlled[0]?.actor ?? game.user.character;
+      : canvas?.tokens?.controlled[0]?.actor;
 
     if (!actor)
       return ui.notifications.warn(

@@ -21,7 +21,17 @@
   "readme": "README.md",
   "socket": true,
   "relationships": {
-    "systems": [],
+    "systems": [
+      {
+        "id": "ptu",
+        "type": "system",
+        "manifest": "https://github.com/dylanpiera/Foundry-Pokemon-Tabletop-United-System/releases/latest/download/system.json",
+        "compatibility": {
+          "minimun": "4.3.0",
+          "verified": "4.3.7"
+        }
+      }
+    ],
     "requires": [],
     "conflicts": []
   },

@@ -2,54 +2,49 @@
  * Hook to configure the roll table settings.
  *
  * @param {Application} application - The application instance.
- * @param {JQuery} param1 - A jQuery-wrapped HTML element.
+ * @param {JQuery} $html - A jQuery-wrapped HTML element.
  * @param {Object} data - Data context for the application.
  */
 export default function onRenderRollTable(application, [html], data) {
   const lastFormGroup = html.querySelector(".form-group:last-of-type");
-  if (!lastFormGroup) return;
+  const sheetFooter = html.querySelector("footer.sheet-footer");
+
+  if (!lastFormGroup || !sheetFooter) return;
 
   const rollTableDocument = application.document;
-
   const isSlot = rollTableDocument.getFlag("ptr-slot", "isSlot") ?? false;
   const slotCost = rollTableDocument.getFlag("ptr-slot", "slotCost") ?? 0;
 
-  // Create the container for slot options
-  const slotContainerHTML = `
-      <div class="ptr-slot fields-container">
-        <h3>PTR Slot Machine</h3>
-        ${getIsSlotHTML(isSlot)}
-        ${getSlotCostHTML(slotCost, isSlot)}
-      </div>
-    `;
+  // Inject slot container
+  lastFormGroup.insertAdjacentHTML(
+    "afterend",
+    createSlotContainerHTML(isSlot, slotCost)
+  );
 
-  // Inject the container after the last form group
-  lastFormGroup.insertAdjacentHTML("afterend", slotContainerHTML);
+  if (isSlot)
+    sheetFooter.insertAdjacentHTML(
+      "beforeend",
+      `<button class="ptr-slot-draw" type="button">
+      <i class="fa-regular fa-slot-machine"></i> 
+      Draw Slot Machine!
+      </button>`
+    );
 
-  // Set up the event listeners
+  // Set up event listeners
   const slotCheckbox = html.querySelector("input.ptr-slot");
+  const slotCostInput = html.querySelector("input.ptr-slot-cost");
+  const drawSlotMachine = html.querySelector("button.ptr-slot-draw");
+
   if (slotCheckbox) {
     slotCheckbox.addEventListener("change", async (event) => {
-      await rollTableDocument.setFlag(
-        "ptr-slot",
-        "isSlot",
-        event.target.checked
-      );
-      const slotCostInput = html.querySelector("input.ptr-slot-cost");
-      if (slotCostInput) {
-        // Enable/disable the slot cost input based on isSlot
-        slotCostInput.disabled = !event.target.checked;
-      }
+      const enabled = event.target.checked;
+      await rollTableDocument.setFlag("ptr-slot", "isSlot", enabled);
+      if (slotCostInput) slotCostInput.disabled = !enabled;
     });
   }
 
-  // Ensure that the slot cost input is disabled or enabled on load
-  const slotCostInput = html.querySelector("input.ptr-slot-cost");
   if (slotCostInput) {
     slotCostInput.disabled = !isSlot;
-  }
-
-  if (slotCostInput) {
     slotCostInput.addEventListener("change", async (event) => {
       await rollTableDocument.setFlag(
         "ptr-slot",
@@ -58,57 +53,69 @@ export default function onRenderRollTable(application, [html], data) {
       );
     });
   }
+
+  if (drawSlotMachine) {
+    drawSlotMachine.addEventListener("click", async (event) => {
+      event.preventDefault();
+      await rollTableDocument.drawSlotMachine();
+    });
+  }
 }
 
 /**
- * Generates the HTML for the 'isSlot' checkbox.
+ * Creates the HTML for the slot container.
+ *
+ * @param {boolean} isSlot - Whether the slot machine is enabled.
+ * @param {number} slotCost - Current slot cost value.
+ * @returns {string} - HTML string for the slot container.
+ */
+function createSlotContainerHTML(isSlot, slotCost) {
+  return `
+    <div class="ptr-slot fields-container">
+      <h3>PTR Slot Machine</h3>
+      ${createCheckboxHTML(isSlot)}
+      ${createCostInputHTML(slotCost, isSlot)}
+    </div>
+  `;
+}
+
+/**
+ * Creates the HTML for the 'isSlot' checkbox.
  *
  * @param {boolean} isSlot - Current state of the 'isSlot' flag.
- * @returns {string} - HTML string for the 'isSlot' checkbox.
+ * @returns {string} - HTML string for the checkbox.
  */
-function getIsSlotHTML(isSlot) {
+function createCheckboxHTML(isSlot) {
   return `
-      <div class="form-group">
-        <label>Is a slot machine?</label>
-        <div class="form-fields">
-          <input 
-            class="ptr-slot" 
-            type="checkbox" 
-            ${isSlot ? "checked" : ""} 
-          />
-        </div>
-        <p class="hint">
-          Enable this option to allow the table to function as a slot machine.
-        </p>
+    <div class="form-group">
+      <label>Is a slot machine?</label>
+      <div class="form-fields">
+        <input class="ptr-slot" type="checkbox" ${isSlot ? "checked" : ""} />
       </div>
-    `;
+      <p class="hint">Enable this option to allow the table to function as a slot machine.</p>
+    </div>
+  `;
 }
 
 /**
- * Generates the HTML for the 'slotCost' input.
+ * Creates the HTML for the 'slotCost' input.
  *
  * @param {number} slotCost - Current slot cost value.
  * @param {boolean} isSlot - Whether the slot machine is enabled.
- * @returns {string} - HTML string for the 'slotCost' input.
+ * @returns {string} - HTML string for the cost input.
  */
-function getSlotCostHTML(slotCost, isSlot) {
+function createCostInputHTML(slotCost, isSlot) {
   return `
-      <div class="form-group">
-        <label>Slot cost</label>
-        <div class="form-fields">
-          <input 
-            class="ptr-slot-cost" 
-            type="number" 
-            value="${slotCost}" 
-            min="0" 
-            ${isSlot ? "" : "disabled"} 
-          />
-        </div>
-        <p class="hint">
-          Set the cost required to roll the slot machine. This value determines the amount needed for each spin.
-        </p>
+    <div class="form-group">
+      <label>Slot cost</label>
+      <div class="form-fields">
+        <input class="ptr-slot-cost" type="number" value="${slotCost}" min="0" ${
+    isSlot ? "" : "disabled"
+  } />
       </div>
-    `;
+      <p class="hint">Set the cost required to roll the slot machine. This value determines the amount needed for each spin.</p>
+    </div>
+  `;
 }
 
 /**
